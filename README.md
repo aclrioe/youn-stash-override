@@ -1,6 +1,6 @@
 # 个人 Stash 覆写
 
-用于个人 Stash 主配置的广告拦截、自定义分流、Apple 与 ChatGPT 规则。
+可跨多份 Stash 主配置复用的广告拦截、自定义分流、Apple 与 ChatGPT 规则。
 
 ## 安装
 
@@ -18,12 +18,28 @@ https://cdn.jsdelivr.net/gh/aclrioe/youn-stash-override@main/Stash/personal-rule
 
 ## 依赖与内容
 
-- 主配置中必须已有 `🌍选择代理节点` 策略组；该组应选中实际可用的代理。
+- 不要求机场主配置有特定名称的策略组；覆写自己创建 `🧩个人覆写出口`，通过 `include-all: true` 引用当前配置的所有节点和远程代理集。
+- 更新并启用覆写后，到 Stash 策略组中进入 `🧩个人覆写出口`，手动选择当前机场的可用节点。切换机场主配置后检查该组的候选和当前选择。
 - 覆写有 99 条前置规则：Apple 智能/Siri/Relay 10 条、ChatGPT 与原有依赖 13 条、Apple 通用直连 31 条、自定义优先例外 11 条、广告拦截 22 条、其他既有直连 12 条。
 - 保留 Apple 相关七组真实 DNS 与系统 DNS 策略，不修改主配置的全局上游 DNS。
 - Apple 专用代理规则先于 Apple 通用直连；ChatGPT 规则先于广告拦截。
 - BanAD、GEOSITE category-ads 和手写广告规则启用；BanProgramAD 的 RULE-SET 引用仍为注释。
-- 不包含节点、密码、UUID、代理组定义或 MATCH 兜底。
+- 不包含节点、密码、UUID 或 MATCH 兜底；仅新增一个独立代理组，不替换机场原有节点、代理组或兜底规则。
+
+### 跨机场配置的实现
+
+```yaml
+proxy-groups:
+  - name: 🧩个人覆写出口
+    type: select
+    include-all: true
+```
+
+所有原先需要代理的 29 条规则统一指向这个组；DIRECT、REJECT 及其余规则的顺序和内容保持不变。无需知道机场原先叫 `Proxy`、`节点选择` 或其他名称，也不依赖这些组的内部结构。
+
+该组读取的是**当前启用主配置**里的 `proxies` 和 `proxy-providers`，不会把手机上所有已保存但未启用的机场配置混在一起，也不自动继承机场原有组的自动选择、地区筛选或分流策略。已有节点和远程代理集需能在 Stash 正常加载。
+
+如果该组没有候选节点，Stash 会把空组作为 DIRECT 处理；请先确认当前主配置包含可用节点/远程代理集，再使用代理规则。若主配置已有同名 `🧩个人覆写出口` 组，应避免重复定义。
 
 ## 合并与更新
 
@@ -44,5 +60,6 @@ Stash 将覆写的数组前置、字典递归合并。可以在原主配置上�
 ## 参考
 
 - [Stash 覆写合并规则](https://stash.wiki/configuration/override)
+- [Stash 策略组与 include-all](https://stash.wiki/proxy-protocols/proxy-groups)
 - [Stash 规则类型](https://stash.wiki/rules/rule-types)
 - [Stash 远程覆写安装链接](https://stash.wiki/faq/url-schema)

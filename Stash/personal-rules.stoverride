@@ -1,11 +1,12 @@
-# 仅此文件可公开托管；主配置包含节点凭据，请勿一并上传。
+# 可跨多份 Stash 主配置复用；不包含节点凭据。
 name: 个人分流 · 广告拦截 · Apple与ChatGPT
 desc: |-
-  适配本次手机 Stash 主配置；依赖已有策略组「🌍选择代理节点」。
+  自建「🧩个人覆写出口」策略组，自动引用当前主配置的所有节点和远程代理集。
+  不依赖机场原有策略组名称；切换配置后在此组选择可用节点。
   99 条前置规则，保留 Apple DNS 策略；不包含节点、密码或 MATCH 兜底。
   ChatGPT 原有 13 条规则前移至广告拦截之前；其他分类间保持原有优先级。
   BanProgramAD 维持未启用；本文件只处理 DNS 与路由，不修改请求或设备信息。
-version: '2026.11.04.1'
+version: '2026.11.04.2'
 
 # 字典递归合并、数组前置；不使用 #!replace，以保留主配置其他规则。
 dns:
@@ -40,34 +41,40 @@ rule-providers:
     url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanProgramAD.list
     path: ./rules/karing-program-ad.list
     interval: 86400
-# 不定义 proxies / proxy-groups；使用主配置现有策略组。
+# 只新增此独立组，不替换主配置的节点或策略组。
+# include-all 引用当前配置的 proxies / proxy-providers，不引用其他已保存但未启用的配置。
+proxy-groups:
+  - name: 🧩个人覆写出口
+    type: select
+    include-all: true
+
 rules:
   # 1. Apple 智能 / Siri / Relay：保留原有 10 条，优先于 Apple 通用直连
-  - DOMAIN-SUFFIX,smoot.apple.com,🌍选择代理节点
-  - DOMAIN,gspe1-ssl.ls.apple.com,🌍选择代理节点
-  - DOMAIN,apple-relay.apple.com,🌍选择代理节点
-  - DOMAIN,guzzoni.apple.com,🌍选择代理节点
-  - DOMAIN,cp4.cloudflare.com,🌍选择代理节点
-  - DOMAIN,apple-relay.akamaized.net,🌍选择代理节点
-  - DOMAIN,apple-relay.cloudflare.com,🌍选择代理节点
-  - DOMAIN,apple-relay.fastly-edge.com,🌍选择代理节点
-  - DOMAIN,apple-relay.mask.apple-dns.net,🌍选择代理节点
-  - DOMAIN-KEYWORD,apple-relay,🌍选择代理节点
+  - DOMAIN-SUFFIX,smoot.apple.com,🧩个人覆写出口
+  - DOMAIN,gspe1-ssl.ls.apple.com,🧩个人覆写出口
+  - DOMAIN,apple-relay.apple.com,🧩个人覆写出口
+  - DOMAIN,guzzoni.apple.com,🧩个人覆写出口
+  - DOMAIN,cp4.cloudflare.com,🧩个人覆写出口
+  - DOMAIN,apple-relay.akamaized.net,🧩个人覆写出口
+  - DOMAIN,apple-relay.cloudflare.com,🧩个人覆写出口
+  - DOMAIN,apple-relay.fastly-edge.com,🧩个人覆写出口
+  - DOMAIN,apple-relay.mask.apple-dns.net,🧩个人覆写出口
+  - DOMAIN-KEYWORD,apple-relay,🧩个人覆写出口
 
   # 2. ChatGPT 及原有依赖：13 条，从主配置后段移到广告拦截之前
-  - DOMAIN,challenges.cloudflare.com,🌍选择代理节点
-  - DOMAIN,events.statsigapi.net,🌍选择代理节点
-  - DOMAIN,featuregates.org,🌍选择代理节点
-  - DOMAIN,o33249.ingest.sentry.io,🌍选择代理节点
-  - DOMAIN,openaiapi-site.azureedge.net,🌍选择代理节点
-  - DOMAIN-SUFFIX,ai.com,🌍选择代理节点
-  - DOMAIN-SUFFIX,auth0.com,🌍选择代理节点
-  - DOMAIN-SUFFIX,chatgpt.com,🌍选择代理节点
-  - DOMAIN-SUFFIX,identrust.com,🌍选择代理节点
-  - DOMAIN-SUFFIX,intercom.io,🌍选择代理节点
-  - DOMAIN-SUFFIX,oaistatic.com,🌍选择代理节点
-  - DOMAIN-SUFFIX,oaiusercontent.com,🌍选择代理节点
-  - DOMAIN-SUFFIX,openai.com,🌍选择代理节点
+  - DOMAIN,challenges.cloudflare.com,🧩个人覆写出口
+  - DOMAIN,events.statsigapi.net,🧩个人覆写出口
+  - DOMAIN,featuregates.org,🧩个人覆写出口
+  - DOMAIN,o33249.ingest.sentry.io,🧩个人覆写出口
+  - DOMAIN,openaiapi-site.azureedge.net,🧩个人覆写出口
+  - DOMAIN-SUFFIX,ai.com,🧩个人覆写出口
+  - DOMAIN-SUFFIX,auth0.com,🧩个人覆写出口
+  - DOMAIN-SUFFIX,chatgpt.com,🧩个人覆写出口
+  - DOMAIN-SUFFIX,identrust.com,🧩个人覆写出口
+  - DOMAIN-SUFFIX,intercom.io,🧩个人覆写出口
+  - DOMAIN-SUFFIX,oaistatic.com,🧩个人覆写出口
+  - DOMAIN-SUFFIX,oaiusercontent.com,🧩个人覆写出口
+  - DOMAIN-SUFFIX,openai.com,🧩个人覆写出口
 
   # 3. Apple 通用直连：保留域名和 IP 规则；iOS 忽略的 5 条进程规则不启用
   - DOMAIN-SUFFIX,aaplimg.com,DIRECT
@@ -104,12 +111,12 @@ rules:
 
   # 4. 自定义优先分流：保留最新上传配置的目标与范围（含广泛 CDN）
   - DOMAIN,dispatcher.is.autonavi.com,DIRECT
-  - DOMAIN-SUFFIX,okx.com,🌍选择代理节点
-  - DOMAIN-SUFFIX,okx.com.cdn.cloudflare.net,🌍选择代理节点
-  - DOMAIN-SUFFIX,cloudfront.net,🌍选择代理节点
-  - DOMAIN-SUFFIX,eo.dnse4.com,🌍选择代理节点
-  - DOMAIN-SUFFIX,gnmobile1.com,🌍选择代理节点
-  - DOMAIN-SUFFIX,gnmobile2.com,🌍选择代理节点
+  - DOMAIN-SUFFIX,okx.com,🧩个人覆写出口
+  - DOMAIN-SUFFIX,okx.com.cdn.cloudflare.net,🧩个人覆写出口
+  - DOMAIN-SUFFIX,cloudfront.net,🧩个人覆写出口
+  - DOMAIN-SUFFIX,eo.dnse4.com,🧩个人覆写出口
+  - DOMAIN-SUFFIX,gnmobile1.com,🧩个人覆写出口
+  - DOMAIN-SUFFIX,gnmobile2.com,🧩个人覆写出口
   - DOMAIN,app.adjust.com,DIRECT
   - DOMAIN,app.appsflyer.com,DIRECT
   - DOMAIN,bdtj.tagtic.cn,DIRECT
