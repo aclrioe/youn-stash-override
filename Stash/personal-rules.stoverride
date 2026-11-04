@@ -1,0 +1,157 @@
+# 仅此文件可公开托管；主配置包含节点凭据，请勿一并上传。
+name: 个人分流 · 广告拦截 · Apple与ChatGPT
+desc: |-
+  适配本次手机 Stash 主配置；依赖已有策略组「🌍选择代理节点」。
+  99 条前置规则，保留 Apple DNS 策略；不包含节点、密码或 MATCH 兜底。
+  ChatGPT 原有 13 条规则前移至广告拦截之前；其他分类间保持原有优先级。
+  BanProgramAD 维持未启用；本文件只处理 DNS 与路由，不修改请求或设备信息。
+version: '2026.11.04.1'
+
+# 字典递归合并、数组前置；不使用 #!replace，以保留主配置其他规则。
+dns:
+  fake-ip-filter:
+    - "+.apple.com"
+    - "+.icloud.com"
+    - "+.weather.com"
+    - "+.aaplimg.com"
+    - "+.cdn-apple.com"
+    - "+.icloud-content.com"
+    - "+.apple-cloudkit.com"
+  nameserver-policy:
+    "+.apple.com": system
+    "+.icloud.com": system
+    "+.weather.com": system
+    "+.aaplimg.com": system
+    "+.cdn-apple.com": system
+    "+.icloud-content.com": system
+    "+.apple-cloudkit.com": system
+
+rule-providers:
+  karing-banad:
+    behavior: classical
+    format: text
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list
+    path: ./rules/karing-banad.list
+    interval: 86400
+
+  karing-program-ad:
+    behavior: classical
+    format: text
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanProgramAD.list
+    path: ./rules/karing-program-ad.list
+    interval: 86400
+# 不定义 proxies / proxy-groups；使用主配置现有策略组。
+rules:
+  # 1. Apple 智能 / Siri / Relay：保留原有 10 条，优先于 Apple 通用直连
+  - DOMAIN-SUFFIX,smoot.apple.com,🌍选择代理节点
+  - DOMAIN,gspe1-ssl.ls.apple.com,🌍选择代理节点
+  - DOMAIN,apple-relay.apple.com,🌍选择代理节点
+  - DOMAIN,guzzoni.apple.com,🌍选择代理节点
+  - DOMAIN,cp4.cloudflare.com,🌍选择代理节点
+  - DOMAIN,apple-relay.akamaized.net,🌍选择代理节点
+  - DOMAIN,apple-relay.cloudflare.com,🌍选择代理节点
+  - DOMAIN,apple-relay.fastly-edge.com,🌍选择代理节点
+  - DOMAIN,apple-relay.mask.apple-dns.net,🌍选择代理节点
+  - DOMAIN-KEYWORD,apple-relay,🌍选择代理节点
+
+  # 2. ChatGPT 及原有依赖：13 条，从主配置后段移到广告拦截之前
+  - DOMAIN,challenges.cloudflare.com,🌍选择代理节点
+  - DOMAIN,events.statsigapi.net,🌍选择代理节点
+  - DOMAIN,featuregates.org,🌍选择代理节点
+  - DOMAIN,o33249.ingest.sentry.io,🌍选择代理节点
+  - DOMAIN,openaiapi-site.azureedge.net,🌍选择代理节点
+  - DOMAIN-SUFFIX,ai.com,🌍选择代理节点
+  - DOMAIN-SUFFIX,auth0.com,🌍选择代理节点
+  - DOMAIN-SUFFIX,chatgpt.com,🌍选择代理节点
+  - DOMAIN-SUFFIX,identrust.com,🌍选择代理节点
+  - DOMAIN-SUFFIX,intercom.io,🌍选择代理节点
+  - DOMAIN-SUFFIX,oaistatic.com,🌍选择代理节点
+  - DOMAIN-SUFFIX,oaiusercontent.com,🌍选择代理节点
+  - DOMAIN-SUFFIX,openai.com,🌍选择代理节点
+
+  # 3. Apple 通用直连：保留域名和 IP 规则；iOS 忽略的 5 条进程规则不启用
+  - DOMAIN-SUFFIX,aaplimg.com,DIRECT
+  - DOMAIN-SUFFIX,apple.co,DIRECT
+  - DOMAIN-SUFFIX,apple.com,DIRECT
+  - DOMAIN-SUFFIX,apple-cloudkit.com,DIRECT
+  - DOMAIN-SUFFIX,weather.com,DIRECT
+  - DOMAIN-SUFFIX,apple-livephotoskit.com,DIRECT
+  - DOMAIN-SUFFIX,apple.news,DIRECT
+  - DOMAIN-SUFFIX,applemusic.com,DIRECT
+  - DOMAIN-SUFFIX,appstore.com,DIRECT
+  - DOMAIN-SUFFIX,appsto.re,DIRECT
+  - DOMAIN-SUFFIX,apzones.com,DIRECT
+  - DOMAIN-SUFFIX,cdn-apple.com,DIRECT
+  - DOMAIN-SUFFIX,icloud.com,DIRECT
+  - DOMAIN-SUFFIX,icloud-content.com,DIRECT
+  - DOMAIN-SUFFIX,me.com,DIRECT
+  - DOMAIN,apple.comscoreresearch.com,DIRECT
+  - DOMAIN-KEYWORD,apple.com.akadns.net,DIRECT
+  - DOMAIN-KEYWORD,apple.com.edgekey.net,DIRECT
+  - DOMAIN-KEYWORD,apple-support.akadns.net,DIRECT
+  - DOMAIN-KEYWORD,icloud.com.akadns.net,DIRECT
+  - DOMAIN-KEYWORD,testflight,DIRECT
+  - IP-CIDR,139.178.128.0/18,DIRECT,no-resolve
+  - IP-CIDR,144.178.0.0/19,DIRECT,no-resolve
+  - IP-CIDR,144.178.36.0/22,DIRECT,no-resolve
+  - IP-CIDR,144.178.48.0/20,DIRECT,no-resolve
+  - IP-CIDR,17.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,192.35.50.0/24,DIRECT,no-resolve
+  - IP-CIDR,198.183.17.0/24,DIRECT,no-resolve
+  - IP-CIDR,205.180.175.0/24,DIRECT,no-resolve
+  - IP-CIDR,63.92.224.0/19,DIRECT,no-resolve
+  - IP-CIDR,65.199.22.0/23,DIRECT,no-resolve
+
+  # 4. 自定义优先分流：保留最新上传配置的目标与范围（含广泛 CDN）
+  - DOMAIN,dispatcher.is.autonavi.com,DIRECT
+  - DOMAIN-SUFFIX,okx.com,🌍选择代理节点
+  - DOMAIN-SUFFIX,okx.com.cdn.cloudflare.net,🌍选择代理节点
+  - DOMAIN-SUFFIX,cloudfront.net,🌍选择代理节点
+  - DOMAIN-SUFFIX,eo.dnse4.com,🌍选择代理节点
+  - DOMAIN-SUFFIX,gnmobile1.com,🌍选择代理节点
+  - DOMAIN-SUFFIX,gnmobile2.com,🌍选择代理节点
+  - DOMAIN,app.adjust.com,DIRECT
+  - DOMAIN,app.appsflyer.com,DIRECT
+  - DOMAIN,bdtj.tagtic.cn,DIRECT
+  - DOMAIN,log.mmstat.com,DIRECT
+
+  # 5. 广告拦截：BanAD + category-ads + 20 条自定义拦截；BanProgramAD 维持未启用
+  - RULE-SET,karing-banad,REJECT
+  - GEOSITE,category-ads,REJECT
+  - DOMAIN-SUFFIX,sf3-fe-tos.pglstatp-toutiao.com,REJECT
+  - DOMAIN-SUFFIX,adservice.sigmob.cn,REJECT
+  - DOMAIN-SUFFIX,api-access.pangolin-sdk-toutiao1.com,REJECT
+  - DOMAIN-SUFFIX,api-access.pangolin-sdk-toutiao.com,REJECT
+  - DOMAIN-SUFFIX,sdk.adx.adwangmai.com,REJECT
+  - DOMAIN-SUFFIX,sdk-cfg.adx.adwangmai.com,REJECT
+  - DOMAIN-SUFFIX,cdn-ad.wtzw.com,REJECT
+  - DOMAIN-SUFFIX,cdn-new-ad.wtzw.com,REJECT
+  - DOMAIN-SUFFIX,gdt.qq.com,REJECT
+  - DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
+  - DOMAIN-SUFFIX,csjplatform.com,REJECT
+  - DOMAIN-SUFFIX,sigmob.com,REJECT
+  - DOMAIN-SUFFIX,inner.shunchangzhixing.com,REJECT
+  - DOMAIN-SUFFIX,ad.shunchangzhixing.com,REJECT
+  - DOMAIN-SUFFIX,sdk.tianmu.mobi,REJECT
+  - DOMAIN-SUFFIX,open.e.kuaishou.com,REJECT
+  - DOMAIN-SUFFIX,api.shanghailingye.cn,REJECT
+  - DOMAIN-SUFFIX,openadapi.fancydsp.com,REJECT
+  - DOMAIN-SUFFIX,sdk.e.qq.co,REJECT
+  - DOMAIN-SUFFIX,sdk.e.qq.com,REJECT
+
+  # 6. 其他既有直连：保留在广告拦截之后的位置，不提升白名单优先级
+  - DOMAIN,sycm.mmstat.com,DIRECT
+  - DOMAIN,safebrowsing.googleapis.com,DIRECT
+  - DOMAIN,safebrowsing.googleapis-cn.com,DIRECT
+  - DOMAIN,safebrowsing.clients.google.com,DIRECT
+  - DOMAIN,safebrowsing-cache.google.com,DIRECT
+  - DOMAIN,fairplay.l.qq.com,DIRECT
+  - DOMAIN,livew.l.qq.com,DIRECT
+  - DOMAIN,vd.l.qq.com,DIRECT
+  - DOMAIN,vi.l.qq.com,DIRECT
+  - DOMAIN,analytics.strava.com,DIRECT
+  - DOMAIN,msg.umeng.com,DIRECT
+  - DOMAIN,msg.umengcloud.com,DIRECT
+
+  # 原配置中未启用的可选项（维持未启用）：
+  # - RULE-SET,karing-program-ad,REJECT
