@@ -4,14 +4,17 @@
 
 ## 安装
 
-- [Stash 一键安装](https://link.stash.ws/install-override/raw.githubusercontent.com/aclrioe/youn-stash-override/main/Stash/personal-rules.stoverride)
-- [覆写 Raw URL](https://raw.githubusercontent.com/aclrioe/youn-stash-override/main/Stash/personal-rules.stoverride)
+- [Stash 一键安装（CDN）](https://link.stash.ws/install-override/cdn.jsdelivr.net/gh/aclrioe/youn-stash-override@main/Stash/personal-rules.stoverride)
+- [覆写 CDN URL（默认）](https://cdn.jsdelivr.net/gh/aclrioe/youn-stash-override@main/Stash/personal-rules.stoverride)
+- [GitHub Raw URL（备用）](https://raw.githubusercontent.com/aclrioe/youn-stash-override/main/Stash/personal-rules.stoverride)
 
 也可在 Stash 的覆写管理中从 URL 添加：
 
 ```text
-https://raw.githubusercontent.com/aclrioe/youn-stash-override/main/Stash/personal-rules.stoverride
+https://cdn.jsdelivr.net/gh/aclrioe/youn-stash-override@main/Stash/personal-rules.stoverride
 ```
+
+默认使用 jsDelivr CDN；不同网络的直连可用性可能不同。CDN 存在缓存，仓库更新后内容可能延迟同步。此地址仅用于下载覆写文件，不会改变覆写内部广告规则集的下载地址。
 
 ## 依赖与内容
 
